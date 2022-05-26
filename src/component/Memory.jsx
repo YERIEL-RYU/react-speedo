@@ -19,28 +19,31 @@ const Memory = () => {
   const getMemory = useCallback(() => {
     axios
       .get("http://localhost:4000/hardware/memory")
-      .then((res) => setRam(res.data.memory_usage))
-      .catch((err) => console.log(err));
-  }, []);
-  const getLineMemory = useCallback(() => {
-    var time = new Date();
-    console.log(time);
-    axios
-      .get("http://localhost:4000/hardware/memory")
-      .then((res) => {
-        // console.log(ratio)
+      .then(({ data }) => {
+        setRam(data.memory_usage);
         var arr = [...ratio];
-        arr.push(res.data.memory_usage.ratio);
+        arr.push(data.memory_usage.ratio);
         setRatio(arr);
-        // console.log(arr);
       })
       .catch((err) => console.log(err));
   }, [ratio]);
 
-  useEffect(() => {
-    // setInterval(() => getLineMemory(), 1000);
-    getLineMemory();
-  }, [getLineMemory]);
+  // const getLineMemory = useCallback(() => {
+  //   axios
+  //     .get("http://localhost:4000/hardware/memory")
+  //     .then((res) => {
+  //       // console.log(ratio)
+  //       var arr = [...ratio];
+  //       arr.push(res.data.memory_usage.ratio);
+  //       setRatio(arr);
+  //       // console.log(arr);
+  //     })
+  //     .catch((err) => console.log(err));
+  // }, [ratio]);
+
+  // useEffect(() => {
+  //   setInterval(() => getLineMemory(), 5000);
+  // }, [getLineMemory]);
   // useEffect(() => {
   //   console.log(ratio);
   // }, [ratio]);
@@ -123,16 +126,60 @@ const Memory = () => {
         }
       }
     };
-
     return [series, options];
   }, []);
 
-  // useLayoutEffect(() => {
-  //   setInterval(() => getMemory(), 5000);
-  // }, [getMemory]);
+  useLayoutEffect(() => {
+    setInterval(() => getMemory(), 5000);
+  }, [getMemory]);
   useLayoutEffect(() => {
     setChart(func(ram.used, ram.total, "Memory"));
   }, [ram, func]);
+
+  var lineOptions = {
+    series: [
+      {
+        data: ratio.slice()
+      }
+    ],
+    chart: {
+      id: "realtime",
+      height: 350,
+      type: "line",
+      animations: {
+        enabled: true,
+        easing: "linear",
+        dynamicAnimation: {
+          speed: 5000
+        }
+      },
+      toolbar: {
+        show: false
+      },
+      zoom: {
+        enabled: false
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: "smooth"
+    },
+    markers: {
+      size: 0
+    },
+    yaxis: {
+      max: 100
+    },
+    xaxis: {
+      labels: { show: false }
+    },
+    legend: {
+      show: false
+    },
+    colors: ["#006888"]
+  };
 
   return (
     <Container>
@@ -142,6 +189,15 @@ const Memory = () => {
           options={chart?.[1]}
           series={chart?.[0]}
           height="300px"
+        />
+      </div>
+      <div>
+        <ReactApexChart
+          type="line"
+          options={lineOptions}
+          series={[{ data: ratio.slice() }]}
+          height="300px"
+          width="500px"
         />
       </div>
     </Container>
